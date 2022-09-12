@@ -3,8 +3,6 @@
  * to be loaded before the Express server it instruments, via --require .
  */
 
-import consola from 'consola';
-
 import * as opentelemetry from '@opentelemetry/api';
 
 import { DiagConsoleLogger } from '@opentelemetry/api';
@@ -44,7 +42,7 @@ export function initOpenTelemetry() : { provider: NodeTracerProvider } {
     provider.register({});
 
     // Log trace spans to the console for testing
-    consola.info("Adding ConsoleSpanExporter to log trace events to console");
+    console.info("Adding ConsoleSpanExporter to log trace events to console");
     provider.addSpanProcessor(new SimpleSpanProcessor(new ConsoleSpanExporter()));
 
     const httpInstrumentation = new HttpInstrumentation();
@@ -54,7 +52,7 @@ export function initOpenTelemetry() : { provider: NodeTracerProvider } {
         // info.request is a https://expressjs.com/en/api.html#req
         requestHook: function (span: Span, info: ExpressRequestInfo) {
           // !!! I am never called !!!
-          consola.log("XXX in requestHook");
+          console.log("XXX in requestHook");
           process.exit(1);
         },
       });
@@ -63,7 +61,7 @@ export function initOpenTelemetry() : { provider: NodeTracerProvider } {
       instrumentations: [ httpInstrumentation, expressInstrumentation ],
     })
   } catch (e) {
-    consola.error('OpenTelemetry initailization failed. Continuing anyway. Exception: ' + e);
+    console.error('OpenTelemetry initailization failed. Continuing anyway. Exception: ' + e);
   }
 
   return provider;
@@ -71,8 +69,8 @@ export function initOpenTelemetry() : { provider: NodeTracerProvider } {
 
 // Allow tracing to be invoked by --require or separately imported and called
 if (require.main !== module) {
-  consola.log("initOpenTelemetry() called directly in tracing.ts")
+  console.log("initOpenTelemetry() called directly in tracing.ts")
   const provider = initOpenTelemetry();
 } else {
-  consola.log("initOpenTelemetry() to be called from importer")
+  console.log("initOpenTelemetry() to be called from importer")
 }

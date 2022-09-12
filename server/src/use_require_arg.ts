@@ -1,4 +1,7 @@
-/* initOpenTelemetry() was called by --require tracing.ts before this file loads */
-
-import { startServer } from './app';
+/*
+ * initOpenTelemetry() was called by --require tracing.ts before this file loads.
+ *
+ * It is in a separate bundle, tracing.js
+ */
+const { startServer} = require('./app');
 startServer();
