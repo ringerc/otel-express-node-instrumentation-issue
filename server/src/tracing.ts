@@ -1,6 +1,7 @@
 /*
  * This script loads OpenTelemetry opentelemetry and metrics instrumentation. It needs
- * to be loaded before the Express server it instruments, via --require .
+ * to be loaded before the Express server it instruments, via --require or by
+ * a require('./tracing') before anything else is imported.
  */
 
 import * as opentelemetry from '@opentelemetry/api';
@@ -51,9 +52,7 @@ export function initOpenTelemetry() : { provider: NodeTracerProvider } {
       new ExpressInstrumentation({
         // info.request is a https://expressjs.com/en/api.html#req
         requestHook: function (span: Span, info: ExpressRequestInfo) {
-          // !!! I am never called !!!
-          console.log("XXX in requestHook");
-          process.exit(1);
+          console.log("Express requesthook() reached");
         },
       });
 

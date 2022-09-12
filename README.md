@@ -1,8 +1,14 @@
 # Demo for issue with Express nodejs opentelemetry autoinstrumentation
 
-**THIS DEMO DOES NOT FUNCTION CORRECTLY, IT IS FOR A HELP REQUEST / PROBLEM REPORT**.
+This was written as a demo for a non-working example for the bug report at
+https://github.com/open-telemetry/opentelemetry-js-contrib/issues/1166
 
-**DO NOT COPY THIS CODE, IT IS NOT A CORRECT EXAMPLE**
+The solution was to exclude any modules that need to be instrumented from the
+bundler, so they remain in `node_modules`. In this case, that's
+`--external:request --external:express`.
+
+The demo worked for `http` traces because the app I was working on, and cut down
+to create this demo, had `--external:request` on its `esbuild` command line.
 
 ## What this does
 
@@ -14,8 +20,6 @@ in [node's `--require`](./server/package.json).
 The server responds to GET requests to the `/test` endpoint, and has a single
 simple global middleware function that logs the request timestamp to the console
 so the Express tracing has something other than the initial request to trace.
-
-Except that the Express traces never seem to fire, only the http traces.
 
 The tracing initialization script is written in typescript and bundled with
 esbuild, but no difference is observed when it's converted to handwritten cjs.
@@ -29,6 +33,7 @@ Package versions in [`package.json`](server/package.json); at time of writing
 * `@opentelemetry/core` 1.6.0 (and all other packages from `opentelemetry-js`)
 * `@opentelemetry/instrumentation-http` 0.31.0
 * `@opentelemetry/instrumentation-express` 0.31.0
+
 
 ## Run it
 
@@ -77,11 +82,18 @@ $ curl http://localhost:3000/test
 GET request to /test
 ```
 
-## Server output for GET request (start:separate)
+## Server output for GET request
 
-When the tracing support is loaded using `--require ./dist/tracing.js`, a trace
-span is emitted by the `@opentelemetry/instrumentation-http` instrumentation,
-but *not* by the
+In the original version (commit c6c2945), only `http` traces were emitted, not
+`express` traces.
+
+This is because I was using `--external:request` on my `esbuild` command line
+so the http instrumentation could instrument the `request` module. But I did
+*not* list `--external:express`, so the Express server was bundled and could
+not be instrumented.
+
+As a result, a trace span was emitted by the
+`@opentelemetry/instrumentation-http` instrumentation, but *not* by the
 [`@opentelemetry/instrumentation-express`](https://github.com/open-telemetry/opentelemetry-js-contrib/tree/main/plugins/node/opentelemetry-instrumentation-express)
 instrumentation:
 
@@ -118,11 +130,6 @@ logRequest middleware: 1662950831354
 }
 ```
 
-## Server output for GET request (start:combined)
-
-When instrumentation is loaded by the code being traced, no tracing spans are
-emitted at all.
-
 ## Expected result
 
 One or more spans with Express data, resembling that in
@@ -132,3 +139,16 @@ Expected to see at least a span for `GET /test` from the Express tracer, and
 another for the `logRequest` middleware.
 
 The http instrumentation loads and runs fine, so tracing is being loaded.
+
+## Fix
+
+Add `--external:request --external:express` to your `esbuild`.
+
+If you are using `--require` to load it, you may also need to `--external` your
+tracing script.
+
+## Other issues
+
+Do not use `import` to load your tracing script if you are loading it into your
+app's `index.ts` (or whatever its entrypoint is). Use `require`, or the
+autoinstrumentations will silently not work.

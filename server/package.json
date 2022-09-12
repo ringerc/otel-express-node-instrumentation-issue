@@ -5,8 +5,8 @@
   "main": "dist",
   "scripts": {
     "build:tracing": "esbuild src/tracing.ts --bundle --platform=node --outfile=dist/tracing.js",
-    "build:separate": "esbuild src/use_require_arg.ts --bundle --platform=node --external:request --external:./tracing --outfile=dist/use_require_arg.js && npm run build:tracing",
-    "build:combined": "esbuild src/direct_import.ts --bundle --platform=node --external:request --outfile=dist/direct_import.js",
+    "build:separate": "esbuild src/use_require_arg.ts --bundle --platform=node --external:request --external:express --external:./tracing --outfile=dist/use_require_arg.js && npm run build:tracing",
+    "build:combined": "esbuild src/direct_import.ts --bundle --platform=node --external:request --external:express --outfile=dist/direct_import.js",
     "build": "rm -rf dist && npm run build:separate && npm run build:combined",
     "start:combined": "NODE_ENV=development node dist/direct_import.js",
     "start:separate": "NODE_ENV=development node --require ./dist/tracing.js dist/use_require_arg.js"

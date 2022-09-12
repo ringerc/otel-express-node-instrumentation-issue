@@ -7,7 +7,7 @@ build: deps
 	cd server && npm run build
 
 run-combined: build
-	cd server && npm run start:separate
+	cd server && npm run start:combined
 
 run-separate: build
 	cd server && npm run start:separate
