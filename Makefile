@@ -1,4 +1,4 @@
-default: run
+default: run-combined
 
 deps:
 	cd server && npm install
@@ -6,7 +6,10 @@ deps:
 build: deps
 	cd server && npm run build
 
-run: build
-	cd server && npm run start
+run-combined: build
+	cd server && npm run start:separate
 
-.PHONY: deps build run
+run-separate: build
+	cd server && npm run start:separate
+
+.PHONY: deps build run-separate run-combined

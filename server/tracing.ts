@@ -24,7 +24,7 @@ const appName = 'testapp';
 
 const otelLogLevel = opentelemetry.DiagLogLevel.ALL;
 
-function initOpenTelemetry() : { provider: NodeTracerProvider } {
+export function initOpenTelemetry() : { provider: NodeTracerProvider } {
   opentelemetry.diag.setLogger(new DiagConsoleLogger(), otelLogLevel);
 
   var provider : NodeTracerProvider;
@@ -69,4 +69,10 @@ function initOpenTelemetry() : { provider: NodeTracerProvider } {
   return provider;
 }
 
-const provider = initOpenTelemetry();
+// Allow tracing to be invoked by --require or separately imported and called
+if (require.main !== module) {
+  consola.log("initOpenTelemetry() called directly in tracing.ts")
+  const provider = initOpenTelemetry();
+} else {
+  consola.log("initOpenTelemetry() to be called from importer")
+}

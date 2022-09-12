@@ -38,13 +38,24 @@ Run `make run`, or:
 $ cd server
 $ npm install
 $ npm run build
-$ npm run start
+```
+
+then to run using a separate --require command line arg:
+
+```
+$ npm run start:separate
+```
+
+or to run by importing the tracing script into the main app:
+
+```
+$ npm run start:combined
 ```
 
 ## Typical startup output
 
 ```
-cd server && npm run start
+cd server && npm run start:separate
 
 > testapp@1.0.0 start
 > NODE_ENV=production node --require ./dist/tracing.js dist
@@ -66,9 +77,10 @@ $ curl http://localhost:3000/test
 GET request to /test
 ```
 
-## Server output for GET request
+## Server output for GET request (start:separate)
 
-A trace span is emitted by the `@opentelemetry/instrumentation-http` instrumentation,
+When the tracing support is loaded using `--require ./dist/tracing.js`, a trace
+span is emitted by the `@opentelemetry/instrumentation-http` instrumentation,
 but *not* by the
 [`@opentelemetry/instrumentation-express`](https://github.com/open-telemetry/opentelemetry-js-contrib/tree/main/plugins/node/opentelemetry-instrumentation-express)
 instrumentation:
@@ -105,6 +117,11 @@ logRequest middleware: 1662950831354
   links: []
 }
 ```
+
+## Server output for GET request (start:combined)
+
+When instrumentation is loaded by the code being traced, no tracing spans are
+emitted at all.
 
 ## Expected result
 
